@@ -25,6 +25,8 @@ services:
       DB_PORT: 5432
       DB_USER: dab
       DB_PASSWORD: dabing
+    stdin_open: true
+    tty: true
 
   # This is the intermediate application reverse proxy without ssl
   nginx:
