@@ -9,3 +9,4 @@ django-crum
 django-split-settings
 inflection
 sqlparse>=0.5.2 # https://github.com/ansible/django-ansible-base/security/dependabot/9
+dynaconf<4.0.0
