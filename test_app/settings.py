@@ -20,8 +20,11 @@ if "pytest" in sys.modules:
     install_import_hook(packages=["ansible_base"])
 
 # Create a the standard DYNACONF instance which will come with DAB defaults
-# This loads defaults.py and environment specific file e.g: development_defaults.py
+# this loads the files passed to `settings_files` list
+# and environment specific file e.g: development_{filename}.py
+# assuming the current env is development and files are located in the same folder
 DYNACONF = factory(
+    __name__,
     "TESTAPP",
     environments=("development", "sqlite"),
     settings_files=["defaults.py"],
@@ -42,7 +45,7 @@ DYNACONF.set(
 load_envvars(DYNACONF)
 
 # Update django.conf.settings with DYNACONF keys.
-export(DYNACONF)
+export(__name__, DYNACONF)
 
 # Validate the settings according to the validators registered
 validate(DYNACONF)

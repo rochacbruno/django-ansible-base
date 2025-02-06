@@ -28,7 +28,9 @@ On the `settings` module (`settings.py` or `settings/__init__.py`), create an ob
 
 The `factory` function will accept the following arguments:
 
-- **name**: The name of the application
+- **module_name**: The name of the module
+  The module_name is used to determine the caller module path.
+- **app_name**: The name of the application
   This name is used to determine some configuration defaults such as the main envvar prefix `{NAME}_` and the standard settings file name on `/etc/ansible-automation-platform/{name}/settings.yaml` and the mode switcher on `{name}_MODE`.
 - **extra_envvar_prefixes**: A list of environment variable prefixes to search for settings
   If the application needs to load settings filtering additional prefixes, this list can be used to specify them.
@@ -38,6 +40,7 @@ The `factory` function will accept the following arguments:
 `myapp/settings.py`:
 ```python
 DYNACONF = factory(
+    __name__,
     "MYAPP",
     # Options passed directly to dynaconf
     environments=("development", "production", "testing"),
@@ -183,7 +186,7 @@ The export function will take all variables from the dynaconf object and export 
 It is important to call this function at the very end of the `settings` module.
 
 ```python
-export(DYNACONF)
+export(__name__, DYNACONF)
 ```
 
 ## Validation
@@ -215,6 +218,7 @@ from dynaconf import Validator
 from ansible_base.lib.dynamic_config import factory, export, load_envvars, load_standard_settings_files
 
 DYNACONF = factory(
+    __name__,
     "MYAPP",
     # Options passed directly to dynaconf
     environments=("development", "production", "testing"),
@@ -225,7 +229,7 @@ load_standard_settings_files(DYNACONF)
 
 load_envvars(DYNACONF)
 
-export(DYNACONF)
+export(__name__, DYNACONF)
 
 DYNACONF.validators.register(
     Validator("KEY", required=True),

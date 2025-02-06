@@ -16,7 +16,9 @@ from ansible_base.lib.dynamic_config.settings_logic import get_mergeable_dab_set
 
 
 def factory(
-    name: str,  # main app name to be used to name env_switcher and envvar_prefix
+    module_name: str,  # name of the module that calls this function
+    app_name: str,  # main app name to be used to name env_switcher and envvar_prefix
+    *,
     extra_envvar_prefixes: list[str] | None = None,  # extra prefixes to be used in envvar loader
     **options,  # options to be passed to Dynaconf
 ) -> Dynaconf:
@@ -52,10 +54,15 @@ def factory(
     """
 
     _check_options(options)
-    prefix = name.upper()
-    name = name.lower()
-    frame = inspect.currentframe().f_back
-    caller_path = os.path.dirname(inspect.getfile(frame))
+    prefix = app_name.upper()
+    app_name = app_name.lower()
+
+    # attempt to get the caller path from the module name first
+    # if it fails, fallback to the inspect stack frame back
+    if module := sys.modules.get(module_name):
+        caller_path = os.path.dirname(inspect.getfile(module))
+    else:
+        caller_path = os.path.dirname(inspect.getfile(inspect.currentframe().f_back))
 
     if extra_envvar_prefixes is not None:
         envvar_prefix = ",".join([prefix, *extra_envvar_prefixes])
@@ -69,9 +76,9 @@ def factory(
             std_base_path / "settings.yaml",
             std_base_path / "flags.yaml",
             std_base_path / ".secrets.yaml",
-            std_base_path / name / "settings.yaml",
-            std_base_path / name / "flags.yaml",
-            std_base_path / name / ".secrets.yaml",
+            std_base_path / app_name / "settings.yaml",
+            std_base_path / app_name / "flags.yaml",
+            std_base_path / app_name / ".secrets.yaml",
         ],
     )
 
@@ -125,17 +132,24 @@ def factory(
     return settings
 
 
-def export(settings: Dynaconf):
+def export(module_name: str | type, settings: Dynaconf):
     """Export the settings to the module that called this function.
+
+    module_name is usually `__name__` and is used to get the module object
+    arbitrary module objects can be passed as well so testing can be done on
+    a fake module object.
 
     In a djangoapp/settings.py this will take all variables from the Dynaconf
     instance and set them as attributes in the settings module
     so they can be accessed as `settings.VARIABLE_NAME` from django.conf.settings.
     """
-    frame = inspect.currentframe().f_back
-    caller_module_name = frame.f_globals["__name__"]
+    if isinstance(module_name, str):
+        object_to_populate = sys.modules[module_name]
+    else:
+        object_to_populate = module_name
+
     settings.populate_obj(
-        sys.modules[caller_module_name],
+        object_to_populate,
         internal=False,
         ignore=["IS_DEVELOPMENT_MODE"],
     )
@@ -161,7 +175,7 @@ def load_standard_settings_files(settings: Dynaconf):
         validate=False,
     )
     for path in settings.ANSIBLE_STANDARD_SETTINGS_FILES:
-        if not path.exists():
+        if not Path(path).exists():
             continue
         data = loader.get_source_data([str(path)])
         loader._envless_load(data)
