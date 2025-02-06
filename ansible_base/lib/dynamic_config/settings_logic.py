@@ -17,7 +17,6 @@ DEFAULT_SPECTACULAR_SETTINGS = {
     'VERSION': 'v1',
     'SCHEMA_PATH_PREFIX': '/api/v1/',
     'COMPONENT_NO_READ_ONLY_REQUIRED': True,
-    
 }
 DEFAULT_ANSIBLE_BASE_AUTH = "ansible_base.authentication.backend.AnsibleBaseAuth"
 DEFAULT_ANSIBLE_BASE_JWT_CONSUMER_APP_NAME = "ansible_base.jwt_consumer"

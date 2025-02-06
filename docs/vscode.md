@@ -6,7 +6,7 @@ Configure VSCode to allow developers to use the built-in vscode debugging tool f
 
 1. create a `.env` file in django-ansible-base folder with the following content,
 
-```bash
+```python
 DJANGO_SETTINGS_MODULE=test_app.sqlite3settings
 ```
 

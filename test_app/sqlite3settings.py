@@ -8,4 +8,4 @@ from ansible_base.lib.dynamic_config import export
 from .settings import DYNACONF
 
 DYNACONF.load_file("sqlite_defaults.py")
-export(DYNACONF)
+export(__name__, DYNACONF)

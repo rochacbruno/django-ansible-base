@@ -124,7 +124,7 @@ legacy_tox_ini = """
 
     [testenv:py311sqlite]
     setenv =
-        DJANGO_SETTINGS_MODULE=test_app.sqlite3settings
+        DJANGO_SETTINGS_MODULE = test_app.sqlite3settings
 
     [docker:db]
     dockerfile = {toxinidir}/tools/dev_postgres/Dockerfile
